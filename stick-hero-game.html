@@ -1,0 +1,180 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stick Hero Game</title>
+  <style>
+    /* General Styles */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #1e3c72, #2a5298);
+      color: white;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    canvas {
+      display: block;
+      margin: auto;
+      background: #87ceeb;
+    }
+
+    #ui {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+
+    #score {
+      font-size: 20px;
+    }
+
+    #restart-button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #restart-button:hover {
+      background: #45a049;
+    }
+
+    #intro {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      border-radius: 10px;
+      display: none; /* Initially hidden */
+    }
+
+    h1 {
+      font-size: 2em;
+    }
+
+    p {
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game"></canvas>
+    <div id="ui">
+      <div id="score">Score: 0</div>
+      <button id="restart-button">Restart</button>
+    </div>
+    <div id="intro">
+      <h1>Stick Hero Game</h1>
+      <p>Click and hold to stretch the stick, then release to make your hero walk across!</p>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const restartButton = document.getElementById('restart-button');
+    const scoreDisplay = document.getElementById('score');
+    const intro = document.getElementById('intro');
+
+    let score = 0;
+    let gameState = 'waiting';
+    let stickLength = 0;
+    let heroX = 0;
+
+    // Canvas setup
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Game loop
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawHero();
+      drawStick();
+      drawPlatforms();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Draw the hero
+    function drawHero() {
+      ctx.fillStyle = 'red';
+      ctx.fillRect(heroX, canvas.height - 100, 30, 50); // Hero's position and size
+    }
+
+    // Draw the stick
+    function drawStick() {
+      ctx.fillStyle = 'black';
+      ctx.fillRect(heroX + 15, canvas.height - 100, 5, -stickLength);
+    }
+
+    // Draw platforms
+    function drawPlatforms() {
+      ctx.fillStyle = 'brown';
+      ctx.fillRect(100, canvas.height - 50, 200, 50); // First platform
+      ctx.fillRect(400, canvas.height - 50, 200, 50); // Second platform
+    }
+
+    // Start game logic
+    function startGame() {
+      gameState = 'playing';
+      intro.style.display = 'none';
+      heroX = 100; // Initial position of the hero
+      score = 0;
+      stickLength = 0;
+      updateScore();
+    }
+
+    // Restart game logic
+    restartButton.addEventListener('click', startGame);
+
+    // Update score
+    function updateScore() {
+      scoreDisplay.textContent = `Score: ${score}`;
+    }
+
+    // Handle mouse events for stick stretching
+    canvas.addEventListener('mousedown', () => {
+      if (gameState === 'playing') {
+        const stretchInterval = setInterval(() => {
+          if (gameState === 'playing') {
+            stickLength += 5; // Increment stick length
+          } else {
+            clearInterval(stretchInterval);
+          }
+        }, 50);
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      if (gameState === 'playing') {
+        // Logic to drop stick and check if hero crosses
+        gameState = 'animating';
+        setTimeout(() => {
+          stickLength = 0; // Reset stick length
+          gameState = 'playing';
+        }, 1000);
+      }
+    });
+
+    // Show intro screen initially
+    intro.style.display = 'block';
+
+    // Start the game loop
+    gameLoop();
+  </script>
+</body>
+</html>
